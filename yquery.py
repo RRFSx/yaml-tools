@@ -13,14 +13,21 @@ class MyDumper(yaml.Dumper):
       # Use block style (-)
       return self.represent_sequence('tag:yaml.org,2002:seq', data, flow_style=False)
 
+def shallow(data): # print out the information with "max_depth=1"
+  if isinstance(data, dict):
+    for key in data.keys():
+      print(f"{key}")
+  elif isinstance(data,list):
+     print(f'[a list of {len(data)} item(s)]')
+
 def traverse(subdata,n): # traverse the yaml dict tree until reaching leafs
-  n=n+1
   if isinstance(subdata,dict):
+    n=n+1
     for key,value in subdata.items():
-      print(f"{' '*(n-1)*3}{key}")
+      print(f"{' '*(n-1)*2}{key}")
       traverse(value,n)
   elif isinstance(subdata,list):
-    print(f"{' '*n*3}[a list of {len(subdata)} item(s)]")
+    print(f"{' '*n*2}[a list of {len(subdata)} item(s)]")
     for item in subdata:
       traverse(item,n)
 
@@ -45,13 +52,13 @@ MyDumper.add_representer(list, MyDumper.represent_list)
 args=sys.argv
 nargs=len(args)-1
 if nargs <1:
-  print(f"Usage: {args[0]} <file> [keystr] [traverse|dump|changeto=''] #default action is traverse")
+  print(f"Usage: {args[0]} <file> [keystr] [shallow|traverse|dump|changeto=''] #default action is shallow")
   exit()
 myfile=args[1]
 mykeystr=""
 if nargs >1:
   mykeystr=args[2]
-action="traverse"
+action="shallow"
 if nargs>2:
   action=args[3]
 
@@ -62,21 +69,12 @@ if mykeystr:
   keytree=mykeystr.split("/")
   subdata=(getFinalValue(data,keytree))
 
-  if action=="traverse":
+  if action=="shallow":
+    shallow(subdata)
+  elif action=="traverse":
     traverse(subdata,0)
   elif action=="dump":
-    if isinstance(subdata,dict):
-      yaml.dump(subdata, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
-      #yaml.dump(subdata, sys.stdout, default_flow_style=True)
-      #yaml.dump(subdata, sys.stdout)
-    elif isinstance(subdata,list):
-     print(f'[a list of {len(data)} item(s)]')
-    else:
-      print(subdata)
+    yaml.dump(subdata, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False) # explicit_end=False to disable the explicit ... output which indicates the end or reaching the leafs
+
 else:
-  # list the top-level keys or times
-  if isinstance(data, dict):
-    for key in data.keys():
-      print(f"{key}")
-  elif isinstance(data,list):
-     print(f'[a list of {len(data)} item(s)]')
+  shallow(data)
