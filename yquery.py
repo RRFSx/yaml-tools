@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# POC: Guoqing.Ge@noaa.gov
+#
 import yaml
 import sys
 
@@ -20,7 +22,7 @@ def shallow(data): # print out the information with "max_depth=1"
   elif isinstance(data,list):
      print(f'[a list of {len(data)} item(s)]')
 
-def traverse(subdata,n): # traverse the yaml dict tree until reaching leafs
+def traverse(subdata,n): # traverse the yaml dict tree until reaching leaves
   if isinstance(subdata,dict):
     n=n+1
     for key,value in subdata.items():
@@ -31,7 +33,7 @@ def traverse(subdata,n): # traverse the yaml dict tree until reaching leafs
     for item in subdata:
       traverse(item,n)
 
-def getFinalValue(subdata,keytree): # get the value for a hirearchy key string
+def getFinalValue(subdata,keytree): # get the value for a hirearchy query string
   if keytree: # not empty
     if isinstance(subdata,dict):
       subdata=subdata[keytree.pop(0)]
@@ -52,12 +54,12 @@ MyDumper.add_representer(list, MyDumper.represent_list)
 args=sys.argv
 nargs=len(args)-1
 if nargs <1:
-  print(f"Usage: {args[0]} <file> [keystr] [shallow|traverse|dump|changeto=''] #default action is shallow")
+  print(f"Usage: {args[0]} <file> [querystr] [shallow|traverse|dump|changeto=''] #default action is shallow")
   exit()
 myfile=args[1]
-mykeystr=""
+myquerystr=""
 if nargs >1:
-  mykeystr=args[2]
+  myquerystr=args[2]
 action="shallow"
 if nargs>2:
   action=args[3]
@@ -65,8 +67,8 @@ if nargs>2:
 with open(myfile) as yfile:
   data=yaml.safe_load(yfile)
 
-if mykeystr:
-  keytree=mykeystr.split("/")
+if myquerystr:
+  keytree=myquerystr.split("/")
   subdata=(getFinalValue(data,keytree))
 
   if action=="shallow":
@@ -74,7 +76,7 @@ if mykeystr:
   elif action=="traverse":
     traverse(subdata,0)
   elif action=="dump":
-    yaml.dump(subdata, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False) # explicit_end=False to disable the explicit ... output which indicates the end or reaching the leafs
+    yaml.dump(subdata, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False) # explicit_end=False to disable the explicit "..." output which indicates the end or reaching the leaves
 
 else:
   shallow(data)
