@@ -66,6 +66,8 @@ basename=os.path.basename(myfile)
 os.makedirs(basename, exist_ok=True)
 os.chdir(basename)
 breakDownYamlFile(data,basename)
+print("")
+
 files_to_move = glob.glob('_*')
 os.makedirs("_anchors", exist_ok=True)
 for myfile in files_to_move:
