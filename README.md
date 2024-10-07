@@ -2,16 +2,16 @@
 
 The YAML files are one of the core components of the JEDI system. Efficiently handling YAML files is crucial for utilizing JEDI in both research and operational development. We need simple, intuitive, and user-friendly YAML tools to help scientists easily examine, compare, manipulate, and breakdown/assemble YAML files.
 
-Python offers [PyYAML module](https://pypi.org/project/PyYAML/), which is a powerful for developers to control details over YAML files. However, it comes with a learning curve and requires coding/debugging.
+Python offers [PyYAML module](https://pypi.org/project/PyYAML/), which is powerful for developers to control details over YAML files. However, it comes with a learning curve and requires coding/debugging.
 
-On the other hand, [`yq`](https://github.com/mikefarah/yq) a lightweight and portable command-line YAML, JSON and XML processor. While userful, it lacks a few key features that are essential for JEDI YAML file manipulation:   
+On the other hand, [`yq`](https://github.com/mikefarah/yq) a lightweight and portable command-line YAML, JSON and XML processor. While useful, it lacks a few key features that are essential for JEDI YAML file manipulation:   
 1. JEDI YAML files often include spaces in key names, such as `cost function`, but currently, as far as I know, `yq` does not support handling spaces in key names.
 2. `yq` does not provide a quick way to view top-level keys at the current nesting level.
-3. `yq` does not support traverseing a YAML file to output a tree structure of its keys.
+3. `yq` does not support traversing a YAML file to output a tree structure of its keys.
 
 A PyYaml-based `yaml_tools` repository is developed to address the above limitations. This repo includes the following utilities:
 ### 1. `ycheck`
-This script just load a yaml file and then dump data to stdout. If a yaml file contains non-standard elements, it will halt and provide detailed error information.   
+This script just loads a yaml file and then dumps data to stdout. If a yaml file contains non-standard elements, it will halt and provide detailed error information.   
 `ycheck sample.yaml`
 ### 2. `yquery`
 This script queries a given element using a query string.   
@@ -22,12 +22,12 @@ yquery sample.yaml ["key1/key2/0"] [shallow|traverse|dump|changeto=""]
 - The query string consists a series of keys (or index for lists) from the top level to the target level
 - The "changto=" action is still under development (i.e. not ready for use)
 ### 3. `ybreakdonw`
-This script breaks down a YAML file into individual elements, from top to bottom, and generates a corresponding directory tree. Each intermediate sub-YAML file is dumped into its respective directory, making it easy to examine the structure step by step.   
+This script breaks down a YAML file into individual elements, from top to bottom, and generates a corresponding directory tree. Each intermediate sub-YAML file is dumped into its respective directory, making it easy to examine a given YAML file structure step by step.   
 `ybreakdown sample.yaml`
 
 # Mini Tutorial
 This repository assumes the current Python environment has installed the `PyYAML` module.   
-On NOAA RDHPCS, `PyYAML` can be find in the RDASApp `EVA` Python environment.
+On NOAA RDHPCS, `PyYAML` can be found in the RDASApp `EVA` Python environment.
 ```
 git clone https://github.com/NOAA-EMC/RDASApp
 cd RDASApp
