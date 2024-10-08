@@ -4,4 +4,5 @@
 !ybreakdown
 !.gitignore
 !README.md
-!samples/*
+!samples
+!samples/*.yaml

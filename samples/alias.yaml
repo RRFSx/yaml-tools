@@ -1,0 +1,21 @@
+_geometry: &geometry
+  nml_file: ./namelist.atmosphere
+  streams_file: ./streams.atmosphere
+  deallocate non-da fields: true
+  interpolation type: unstructured
+
+variational:
+  test: just a test
+
+variational:
+  minimizer:
+    algorithm: DRPCG
+  iterations:
+  - geometry: *geometry
+    gradient norm reduction: 1e-3
+    ninner: 30
+    diagnostics:
+      departures: ombg
+  - geometry: *geometry
+    gradient norm reduction: 1e-3
+    ninner: 50
