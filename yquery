@@ -73,6 +73,10 @@ def editValue(subdata,keytree,edit): # edit the value for a hirearchy query stri
       elif index >= len(subdata):
         index=len(subdata)-1
       pass
+    elif isinstance(subdata,int):
+      return int(edit)
+    elif isinstance(subdata,bool):
+      return bool(edit)
     else:
       return edit
 
@@ -101,6 +105,7 @@ else:
 #
 if action.startswith("edit="):
   edit=action.split('=',1)[1]
+  print(f'edit value: {edit}')
   editValue(data,keytree,edit)
   yaml.dump(data, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
 else:
