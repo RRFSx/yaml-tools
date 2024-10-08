@@ -16,11 +16,11 @@ This script just loads a yaml file and then dumps data to stdout. If a yaml file
 ### 2. `yquery`
 This script queries a given element using a query string.   
 ```
-yquery sample.yaml ["key1/key2/0"] [shallow|traverse|dump|changeto=""]
+yquery sample.yaml ["key1/key2/0"] [traverse|dump|edit=""]
 ```
 - `shallow` is the default behavior which output the top level keys at the current nesting level
 - The query string consists a series of keys (or index for lists) from the top level to the target level
-- The "changto=" action is still under development (i.e. not ready for use)
+- The "edit=" action is still under development (i.e. not ready for use)
 ### 3. `ybreakdonw`
 This script breaks down a YAML file into individual elements, from top to bottom, and generates a corresponding directory tree. Each intermediate sub-YAML file is dumped into its respective directory, making it easy to examine a given YAML file structure step by step.   
 `ybreakdown sample.yaml`
