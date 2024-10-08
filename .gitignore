@@ -1,0 +1,7 @@
+*
+!ycheck
+!yquery
+!ybreakdown
+!.gitignore
+!README.md
+!samples/*

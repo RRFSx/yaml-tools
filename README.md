@@ -1,4 +1,4 @@
-# yaml_tools
+# yaml-tools
 
 The YAML files are one of the core components of the JEDI system. Efficiently handling YAML files is crucial for utilizing JEDI in both research and operational development. We need simple, intuitive, and user-friendly YAML tools to help scientists easily examine, compare, manipulate, and breakdown/assemble YAML files.
 
@@ -9,7 +9,7 @@ On the other hand, [`yq`](https://github.com/mikefarah/yq) a lightweight and por
 2. `yq` does not provide a quick way to view top-level keys at the current nesting level.
 3. `yq` does not support traversing a YAML file to output a tree structure of its keys.
 
-A PyYaml-based `yaml_tools` repository is developed to address the above limitations. This repo includes the following utilities:
+A PyYaml-based `yaml-tools` repository is developed to address the above limitations. This repo includes the following utilities:
 ### 1. `ycheck`
 This script just loads a yaml file and then dumps data to stdout. If a yaml file contains non-standard elements, it will halt and provide detailed error information.   
 `ycheck sample.yaml`
@@ -32,8 +32,8 @@ On NOAA RDHPCS, `PyYAML` can be found in the RDASApp `EVA` Python environment.
 git clone https://github.com/NOAA-EMC/RDASApp
 cd RDASApp
 source ush/load_eva.sh
-git clone https://github.com/rrfsx/yaml_tools.git
-cd yaml_tools
+git clone https://github.com/rrfsx/yaml-tools.git
+cd yaml-tools
 ```
 ### 1. ycheck
 ```
