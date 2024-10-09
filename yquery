@@ -111,10 +111,10 @@ if nargs>2:
   action=args[3]
 
 if pipe:
-  data=yaml.safe_load(sys.stdin)
+  yfile=sys.stdin
 else:
-  with open(myfile) as yfile:
-    data=yaml.safe_load(yfile)
+  yfile=open(myfile, "r")
+data=yaml.safe_load(yfile)
 
 if myquerystr:
   keytree=myquerystr.split("/")
