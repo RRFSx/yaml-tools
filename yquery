@@ -113,6 +113,21 @@ def appendItem(subdata,keytree,edit): # append a dict/list item at the hirearchy
       else:
         appendItem(subdata[index],keytree,edit)
 
+def deleteItem(subdata,keytree): # delete a dict/list item
+  if keytree: # not empty, desend to the target
+    if isinstance(subdata,dict):
+      key=keytree.pop(0)
+      if not keytree: # delete the key
+        subdata.pop(key, None)
+      else:
+        deleteItem(subdata[key],keytree)
+    elif isinstance(subdata,list):
+      index=int(keytree.pop(0))
+      if not keytree: # delete the item
+        subdata.pop(index)
+      else:
+        deleteItem(subdata[index],keytree,edit)
+
 # ====== main =========
 MyDumper.add_representer(list, MyDumper.represent_list)
 MyDumper.add_representer(datetime, MyDumper.represent_datetime)
@@ -150,6 +165,9 @@ if action.startswith("edit="):
 elif action.startswith("append="):
   edit=action.split('=',1)[1]
   appendItem(data,keytree,edit)
+  yaml.dump(data, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
+elif action=="delete":
+  deleteItem(data,keytree)
   yaml.dump(data, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
 else:
   subdata=(getFinalValue(data,keytree))
