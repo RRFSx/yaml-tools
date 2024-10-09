@@ -2,9 +2,12 @@
 # POC: Guoqing.Ge@noaa.gov
 #
 import yaml, sys, os, shutil, glob
+from datetime import datetime
 
 # Custom Dumper class to modify list formatting
 class MyDumper(yaml.Dumper):
+  def represent_datetime(self,data):
+    return self.represent_scalar('tag:yaml.org,2002:timestamp', data.strftime('%Y-%m-%dT%H:%M:%SZ'))
   def represent_list(self, data):
     # Check if the list contains only simple literals (strings, numbers, booleans)
     if all(isinstance(item, (str, int, float, bool)) for item in data):
@@ -50,6 +53,7 @@ def breakDownYamlFile(data, fname):
 
 # ====== main =========
 MyDumper.add_representer(list, MyDumper.represent_list)
+MyDumper.add_representer(datetime, MyDumper.represent_datetime)
 args=sys.argv
 nargs=len(args)-1
 if nargs <1:
