@@ -59,11 +59,11 @@ def loadYaml(fname):
     yfile=open(fname, 'r')
   return yaml.safe_load(yfile)
 
-def editValue(subdata,keytree,edit): # edit the value for a hirearchy query string
+def editValue(subdata,keytree,edit,prevKey=""): # edit the value for a hirearchy query string
   if keytree: # not empty, desend to the target
     if isinstance(subdata,dict):
       key=keytree.pop(0)
-      subdata[key]=editValue(subdata[key],keytree,edit)
+      subdata[key]=editValue(subdata[key],keytree,edit,prevKey=key)
     elif isinstance(subdata,list):
       index=int(keytree.pop(0))
       if index <0:
@@ -74,9 +74,14 @@ def editValue(subdata,keytree,edit): # edit the value for a hirearchy query stri
     return subdata
   else: # empty, modify the target accordingly
     if isinstance(subdata,dict):
-      pass
+      data2=loadYaml(edit)
+      if prevKey in data2:
+        return data2[prevKey]
+      else:
+        #print(f'** No "{prevKey}" key in {edit} and no edits made **', sys.stderr)
+        return subdata
     elif isinstance(subdata,list):
-      pass
+      return loadYaml(edit)
     elif isinstance(subdata,bool): # bool is a subclass of int, so we should check bool first
       if edit.lower() == 'true':
         return True
