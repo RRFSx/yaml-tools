@@ -37,7 +37,7 @@ def traverse(subdata,n): # traverse the yaml dict tree until reaching leaves
     for item in subdata:
       traverse(item,n)
 
-def getFinalValue(subdata,keytree): # get the value for a hirearchy query string
+def getFinalValue(subdata,keytree): # get the value at the hirearchy query string level
   if keytree: # not empty
     if isinstance(subdata,dict):
       subdata=subdata[keytree.pop(0)]
@@ -92,6 +92,27 @@ def editValue(subdata,keytree,edit,prevKey=""): # edit the value for a hirearchy
     else:
       return edit
 
+def appendItem(subdata,keytree,edit): # append a dict/list item at the hirearchy query string level
+  if keytree: # not empty, desend to the target
+    if isinstance(subdata,dict):
+      key=keytree.pop(0)
+      if not keytree: # append new items to the dict
+        data2=loadYaml(edit)
+        subdata.update(data2)
+      else:
+        appendItem(subdata[key],keytree,edit)
+    elif isinstance(subdata,list):
+      index=int(keytree.pop(0))
+      if index <0:
+        index=0
+      elif index >= len(subdata):
+        index=len(subdata)-1
+      if not keytree: # append new items to the lsit
+        data2=loadYaml(edit)
+        subdata.extend(data2)
+      else:
+        appendItem(subdata[index],keytree,edit)
+
 # ====== main =========
 MyDumper.add_representer(list, MyDumper.represent_list)
 MyDumper.add_representer(datetime, MyDumper.represent_datetime)
@@ -100,9 +121,9 @@ args=sys.argv
 nargs=len(args)-1
 myquerystr=""
 action="shallow"
-action_list=["shallow", "traverse", "dump", "edit"]
+action_list=["shallow", "traverse", "dump", "edit", "append", "delete"]
 if nargs <1:
-  print(f"Usage: {args[0]} <pipe|file> [ <querystr> [traverse|dump|edit=] ]")
+  print(f"Usage: {args[0]} <pipe|file> [ <querystr> [traverse|dump|edit=|append=|delete] ]")
   exit()
 
 fname=args[1]
@@ -125,6 +146,10 @@ else:
 if action.startswith("edit="):
   edit=action.split('=',1)[1]
   editValue(data,keytree,edit)
+  yaml.dump(data, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
+elif action.startswith("append="):
+  edit=action.split('=',1)[1]
+  appendItem(data,keytree,edit)
   yaml.dump(data, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False)
 else:
   subdata=(getFinalValue(data,keytree))
