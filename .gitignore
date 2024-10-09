@@ -6,3 +6,5 @@
 !README.md
 !samples
 !samples/*.yaml
+!modulefiles
+!modulefiles/yaml-tools.lua
