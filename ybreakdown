@@ -34,15 +34,15 @@ def breakDownYamlFile(data, fname):
           myfile.write(f"{item}\n")
     else: # list of dict/list
       for index, value in enumerate(data):
-        with open("type_list",'w'):
+        with open("type_is_list",'w'):
           pass # create an empty file 'type_list' to indict a list under the current directory
-        list_name=f'list_{index:02d}'
+        list_name=f'{index}'
         os.makedirs(list_name,exist_ok=True)
         os.chdir(list_name)
         breakDownYamlFile(value,f"{list_name}.yaml")
         os.chdir(save_cwd)
   else:
-    with open('leaf.txt','w') as myfile:
+    with open('type_is_literal','w') as myfile:
       if data is None:
         myfile.write('None')
       else:
