@@ -5,6 +5,7 @@
 !ymergeList
 !.gitignore
 !README.md
+!*.sh
 !samples
 !samples/*.yaml
 !samples/131
