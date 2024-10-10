@@ -57,7 +57,7 @@ MyDumper.add_representer(datetime, MyDumper.represent_datetime)
 args=sys.argv
 nargs=len(args)-1
 if nargs <1:
-  print(f"Usage: {args[0]} <file>")
+  print(f"Usage: ybreakdown <file>")
   exit()
 myfile=args[1]
 

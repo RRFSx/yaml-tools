@@ -138,7 +138,7 @@ myquerystr=""
 action="shallow"
 action_list=["shallow", "traverse", "dump", "edit", "append", "delete"]
 if nargs <1:
-  print(f"Usage: {args[0]} <pipe|file> [ <querystr> [traverse|dump|edit=|append=|delete] ]")
+  print(f"yquery <pipe|file> [querystr] [traverse|dump|edit=|append=|delete]")
   exit()
 
 fname=args[1]
