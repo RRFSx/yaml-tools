@@ -1,0 +1,164 @@
+_iteration:
+  geometry: &id001
+    nml_file: ./namelist.atmosphere
+    streams_file: ./streams.atmosphere
+    deallocate non-da fields: true
+    interpolation type: unstructured
+  gradient norm reduction: 1e-3
+_member:
+  date: '2024-05-27T00:00:00Z'
+  state variables: &id002 [spechum, surface_pressure, temperature, uReconstructMeridional,
+    uReconstructZonal]
+  stream name: ensemble
+output:
+  filename: ./ana.$Y-$M-$D_$h.$m.$s.nc
+  stream name: analysis
+variational:
+  minimizer:
+    algorithm: DRPCG
+  iterations:
+  - geometry: *id001
+    gradient norm reduction: 1e-3
+    diagnostics:
+      departures: ombg
+    ninner: 50
+  - geometry: *id001
+    gradient norm reduction: 1e-3
+    ninner: 50
+final:
+  diagnostics:
+    departures: oman
+cost function:
+  cost type: 3D-Var
+  time window:
+    begin: '2024-05-26T21:00:00Z'
+    length: PT6H
+  jb evaluation: false
+  geometry:
+    nml_file: ./namelist.atmosphere
+    streams_file: ./streams.atmosphere
+    deallocate non-da fields: true
+    interpolation type: unstructured
+  analysis variables: *id002
+  background:
+    state variables: [spechum, surface_pressure, temperature, uReconstructMeridional,
+      uReconstructZonal, theta, rho, u, qv, pressure, landmask, xice, snowc, skintemp,
+      ivgtyp, isltyp, snowh, vegfra, u10, v10, lai, smois, tslb, pressure_p, qc, qi,
+      qg, qr, qs, cldfrac]
+    filename: data/restart.2024-05-27_00.00.00.nc
+    date: '2024-05-27T00:00:00Z'
+  background error:
+    covariance model: ensemble
+    localization:
+      localization method: SABER
+      saber central block:
+        saber block name: BUMP_NICAS
+        active variables: *id002
+        read:
+          io:
+            data directory: data/bumploc/conus12km-401km11levels
+            files prefix: bumploc_401km11levels
+          drivers:
+            multivariate strategy: duplicated
+            read local nicas: true
+          model:
+            level for 2d variables: last
+    members from template:
+      template:
+        date: '2024-05-27T00:00:00Z'
+        state variables: *id002
+        stream name: ensemble
+        filename: ./data/ens/mem%iMember%/restart.2024-05-27_00.00.00.nc
+      pattern: '%iMember%'
+      start: 1
+      zero padding: 2
+      nmembers: 30
+  observations:
+    observers:
+    - obs space:
+        name: msonet
+        distribution:
+          name: RoundRobin
+          halo size: 100e3
+        obsdatain:
+          engine:
+            type: H5File
+            obsfile: data/obs_ctest/ioda_msonet_dc.nc
+        obsdataout:
+          engine:
+            type: H5File
+            obsfile: MSONET_hofxs_stationPressure_188.nc4
+            allow overwrite: true
+        io pool:
+          max pool size: 1
+        observed variables: [stationPressure]
+        simulated variables: [stationPressure]
+      obs operator:
+        name: SfcPCorrected
+        da_psfc_scheme: GSI
+        geovar_sfc_geomz: surface_geopotential_height
+        geovar_geomz: geopotential_height
+      linear obs operator:
+        name: Identity
+      obs error:
+        covariance model: diagonal
+      obs localizations:
+      - localization method: Horizontal Gaspari-Cohn
+        lengthscale: 300e3
+      obs filters:
+      - filter: Perform Action
+        filter variables:
+        - name: stationPressure
+        where:
+        - variable: ObsType/stationPressure
+          is_in: 188
+        action:
+          name: assign error
+          error parameter: 53.89
+        defer to post: true
+      - filter: Perform Action
+        filter variables:
+        - name: stationPressure
+        where:
+        - variable: ObsType/stationPressure
+          is_in: 188
+        action:
+          name: inflate error
+          inflation variable:
+            name: ObsFunction/ObsErrorFactorSfcPressure
+        defer to post: true
+      - filter: Bounds Check
+        apply at iterations: 0,1
+        filter variables:
+        - name: stationPressure
+        minvalue: 0.0
+        maxvalue: 120000.0
+      - filter: Background Check
+        apply at iterations: 0,1
+        filter variables:
+        - name: stationPressure
+        absolute threshold: 5.0
+        threshold: 5.0
+        where:
+        - variable: ObsType/stationPressure
+          is_in: 188
+        action:
+          name: reject
+      - filter: Domain Check
+        apply at iterations: 0,1
+        where:
+        - variable:
+            name: MetaData/timeOffset
+          minvalue: -0.1
+          maxvalue: 0.1
+      - filter: Temporal Thinning
+        apply at iterations: 0,1
+        min_spacing: PT30M
+        seed_time: '2024-05-27T00:00:00Z'
+        category_variable:
+          name: MetaData/stationIdentification
+test:
+  reference filename: testoutput/rrfs-mpasjedi-ens3dvar.ref
+  test output filename: ./rrfs-mpasjedi-ens3dvar.out
+  float relative tolerance: 0.001
+  float absolute tolerance: 1.0e-06

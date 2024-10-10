@@ -1,0 +1,231 @@
+_iteration:
+  geometry: &id001
+    nml_file: ./namelist.atmosphere
+    streams_file: ./streams.atmosphere
+    deallocate non-da fields: true
+    interpolation type: unstructured
+  gradient norm reduction: 1e-3
+_member:
+  date: '2024-05-27T00:00:00Z'
+  state variables: &id002 [spechum, surface_pressure, temperature, uReconstructMeridional,
+    uReconstructZonal]
+  stream name: ensemble
+output:
+  filename: ./ana.$Y-$M-$D_$h.$m.$s.nc
+  stream name: analysis
+variational:
+  minimizer:
+    algorithm: DRPCG
+  iterations:
+  - geometry: *id001
+    gradient norm reduction: 1e-3
+    diagnostics:
+      departures: ombg
+    ninner: 50
+  - geometry: *id001
+    gradient norm reduction: 1e-3
+    ninner: 50
+final:
+  diagnostics:
+    departures: oman
+cost function:
+  cost type: 3D-Var
+  time window:
+    begin: '2024-05-26T21:00:00Z'
+    length: PT6H
+  jb evaluation: false
+  geometry:
+    nml_file: ./namelist.atmosphere
+    streams_file: ./streams.atmosphere
+    deallocate non-da fields: true
+    interpolation type: unstructured
+  analysis variables: *id002
+  background:
+    state variables: [spechum, surface_pressure, temperature, uReconstructMeridional,
+      uReconstructZonal, theta, rho, u, qv, pressure, landmask, xice, snowc, skintemp,
+      ivgtyp, isltyp, snowh, vegfra, u10, v10, lai, smois, tslb, pressure_p, qc, qi,
+      qg, qr, qs, cldfrac]
+    filename: data/restart.2024-05-27_00.00.00.nc
+    date: '2024-05-27T00:00:00Z'
+  background error:
+    covariance model: ensemble
+    localization:
+      localization method: SABER
+      saber central block:
+        saber block name: BUMP_NICAS
+        active variables: *id002
+        read:
+          io:
+            data directory: data/bumploc/conus12km-401km11levels
+            files prefix: bumploc_401km11levels
+          drivers:
+            multivariate strategy: duplicated
+            read local nicas: true
+          model:
+            level for 2d variables: last
+    members from template:
+      template:
+        date: '2024-05-27T00:00:00Z'
+        state variables: *id002
+        stream name: ensemble
+        filename: ./data/ens/mem%iMember%/restart.2024-05-27_00.00.00.nc
+      pattern: '%iMember%'
+      start: 1
+      zero padding: 2
+      nmembers: 30
+  observations:
+    observers:
+    - obs space:
+        name: aircar
+        distribution:
+          name: RoundRobin
+          halo size: 100e3
+        obsdatain:
+          engine:
+            type: H5File
+            obsfile: data/obs_ctest/ioda_aircar_dc.nc
+        obsdataout:
+          engine:
+            type: H5File
+            obsfile: AIRCAR_hofxs_uv_233.nc4
+            allow overwrite: true
+        io pool:
+          max pool size: 1
+        observed variables: [windEastward, windNorthward]
+        simulated variables: [windEastward, windNorthward]
+      obs operator:
+        name: Composite
+        components:
+        - name: VertInterp
+          hofx_scaling: true
+          hofx scaling field: wind_reduction_factor_at_10m
+          hofx scaling field group: GeoVaLs
+          vertical coordinate: air_pressure
+          observation vertical coordinate: pressure
+          observation vertical coordinate group: MetaData
+          interpolation method: log-linear
+          variables:
+          - name: windEastward
+          - name: windNorthward
+      linear obs operator:
+        name: Identity
+      obs error:
+        covariance model: diagonal
+      obs localizations:
+      - localization method: Horizontal Gaspari-Cohn
+        lengthscale: 300e3
+      obs filters:
+      - filter: Perform Action
+        filter variables:
+        - name: windEastward
+        where:
+        - variable: ObsType/windEastward
+          is_in: 233
+        action:
+          name: assign error
+          error function:
+            name: ObsFunction/ObsErrorModelStepwiseLinear
+            options:
+              xvar:
+                name: MetaData/pressure
+              xvals: [110000, 105000, 100000, 95000, 90000, 85000, 80000, 75000, 70000,
+                65000, 60000, 55000, 50000, 45000, 40000, 35000, 30000, 25000, 20000,
+                15000, 10000, 7500, 5000, 4000, 3000, 2000, 1000, 500, 400, 300, 200,
+                100, 0]
+              errors: [2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214,
+                2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214,
+                2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214,
+                2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214]
+        defer to post: true
+      - filter: Perform Action
+        filter variables:
+        - name: windEastward
+        where:
+        - variable: ObsType/windEastward
+          is_in: 233
+        action:
+          name: inflate error
+          inflation variable:
+            name: ObsFunction/ObsErrorFactorPressureCheck
+            options:
+              variable: windEastward
+              inflation factor: 0.0
+        defer to post: true
+      - filter: Perform Action
+        filter variables:
+        - name: windNorthward
+        where:
+        - variable: ObsType/windNorthward
+          is_in: 233
+        action:
+          name: assign error
+          error function:
+            name: ObsFunction/ObsErrorModelStepwiseLinear
+            options:
+              xvar:
+                name: MetaData/pressure
+              xvals: [110000, 105000, 100000, 95000, 90000, 85000, 80000, 75000, 70000,
+                65000, 60000, 55000, 50000, 45000, 40000, 35000, 30000, 25000, 20000,
+                15000, 10000, 7500, 5000, 4000, 3000, 2000, 1000, 500, 400, 300, 200,
+                100, 0]
+              errors: [2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214,
+                2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214,
+                2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214,
+                2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214, 2.3214]
+        defer to post: true
+      - filter: Perform Action
+        filter variables:
+        - name: windNorthward
+        where:
+        - variable: ObsType/windNorthward
+          is_in: 233
+        action:
+          name: inflate error
+          inflation variable:
+            name: ObsFunction/ObsErrorFactorPressureCheck
+            options:
+              variable: windNorthward
+              inflation factor: 0.0
+        defer to post: true
+      - filter: Bounds Check
+        apply at iterations: 0,1
+        filter variables:
+        - name: windEastward
+        - name: windNorthward
+        minvalue: -200
+        maxvalue: 200
+        where:
+        - variable: ObsType/windEastward
+          is_in: 233
+        action:
+          name: reject
+      - filter: Background Check
+        apply at iterations: 0,1
+        filter variables:
+        - name: windEastward
+        - name: windNorthward
+        absolute threshold: 10.0
+        threshold: 10.0
+        where:
+        - variable: ObsType/windEastward
+          is_in: 233
+        action:
+          name: reject
+      - filter: Domain Check
+        apply at iterations: 0,1
+        where:
+        - variable: ObsType/windEastward
+          is_in: 233
+        action:
+          name: reject
+      - filter: Temporal Thinning
+        apply at iterations: 0,1
+        min_spacing: PT30M
+        seed_time: '2024-05-27T00:00:00Z'
+        category_variable:
+          name: MetaData/stationIdentification
+test:
+  reference filename: testoutput/rrfs-mpasjedi-ens3dvar.ref
+  test output filename: ./rrfs-mpasjedi-ens3dvar.out
+  float relative tolerance: 0.001
+  float absolute tolerance: 1.0e-06
