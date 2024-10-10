@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+# POC: Guoqing.Ge@noaa.gov
+#
+import yaml, sys
+from datetime import datetime
+
+# Custom Dumper class to modify list formatting
+class MyDumper(yaml.Dumper):
+  def represent_datetime(self,data):
+    return self.represent_scalar('tag:yaml.org,2002:timestamp', data.strftime('%Y-%m-%dT%H:%M:%SZ'))
+  def represent_list(self, data):
+    # Check if the list contains only simple literals (strings, numbers, booleans)
+    if all(isinstance(item, (str, int, float, bool)) for item in data):
+      # Use compact flow style ([])
+      return self.represent_sequence('tag:yaml.org,2002:seq', data, flow_style=True)
+    else:
+      # Use block style (-)
+      return self.represent_sequence('tag:yaml.org,2002:seq', data, flow_style=False)
+
+def loadYaml(fname):
+  if fname == "pipe":
+    yfile=sys.stdin
+  else:
+    yfile=open(fname, 'r')
+  return yaml.safe_load(yfile)
+
+def getFinalValue(subdata,keytree): # get the value at the hirearchy query string level
+  if keytree: # not empty
+    if isinstance(subdata,dict):
+      subdata=subdata[keytree.pop(0)]
+    elif isinstance(subdata,list):
+      index=int(keytree.pop(0))
+      if index <0:
+        index=0
+      elif index >= len(subdata):
+        index=len(subdata)-1
+      subdata=subdata[index]
+    return getFinalValue(subdata,keytree)
+  else:
+    return subdata
+
+# ====== main =========
+MyDumper.add_representer(list, MyDumper.represent_list)
+MyDumper.add_representer(datetime, MyDumper.represent_datetime)
+
+args=sys.argv
+nargs=len(args)-1
+myquerystr=""
+if nargs <3:
+  print(f"Usage: ymergeList <file1> <querystr> <file2> [file3]...[fileN]\n   Merge lists to file1 immediately below the dest level given by querystr")
+  exit()
+
+fname=args[1]
+myquerystr=args[2]
+data=loadYaml(fname)
+keytree=myquerystr.split("/")
+subdata=getFinalValue(data,keytree)
+if isinstance(subdata,list):
+  for index in range(3, nargs+1):
+    keytree=myquerystr.split("/")
+    data2=getFinalValue(loadYaml(args[index]),keytree)
+    subdata.extend(data2)
+  yaml.dump(data, sys.stdout, Dumper=MyDumper, default_flow_style=False, sort_keys=False)

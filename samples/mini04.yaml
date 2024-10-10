@@ -1,0 +1,8 @@
+demo:
+  configuration:
+    suite: NAMELIST
+    detail:
+      - format:
+        - start: "&run_control"
+        - eg: diffusion_scheme = 'FE_2delta'
+        - end: "/"

@@ -1,0 +1,9 @@
+demo:
+  configuration:
+    suite: YAML
+    detail:
+      - meaning:
+        - Y: Yelling
+        - A: At
+        - M: My
+        - L: Laptop

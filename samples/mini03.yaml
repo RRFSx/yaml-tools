@@ -1,0 +1,9 @@
+demo:
+  configuration:
+    suite: YAML
+    detail:
+      - meaning:
+        - Y: YAML
+        - A: Ain't
+        - M: Markup
+        - L: Language

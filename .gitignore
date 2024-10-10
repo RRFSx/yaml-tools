@@ -2,6 +2,7 @@
 !ycheck
 !yquery
 !ybreakdown
+!ymergeList
 !.gitignore
 !README.md
 !samples
