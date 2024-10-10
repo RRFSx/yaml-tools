@@ -65,11 +65,12 @@ with open(myfile) as yfile:
   data=yaml.safe_load(yfile)
 
 basename=os.path.basename(myfile)
-#if os.path.exists(basename):
-#  shutil.rmtree(basename)
-os.makedirs(basename, exist_ok=True)
-os.chdir(basename)
-breakDownYamlFile(data,basename)
+basedir=f'bd_{basename}'
+#if os.path.exists(basedir):
+#  shutil.rmtree(basedir)
+os.makedirs(basedir, exist_ok=True)
+os.chdir(basedir)
+breakDownYamlFile(data,basedir)
 print("")
 
 files_to_move = glob.glob('_*')

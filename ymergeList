@@ -47,7 +47,7 @@ args=sys.argv
 nargs=len(args)-1
 myquerystr=""
 if nargs <3:
-  print(f"Usage: ymergeList <file1> <querystr> <file2> [file3]...[fileN]\n   Merge lists to file1 immediately below the dest level given by querystr")
+  print(f"Usage: ymergeList <file1> <querystr> <file2> [file3]...[fileN]")
   exit()
 
 fname=args[1]
